@@ -7,6 +7,7 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const deleteBtn = document.getElementsByClassName('delete-btn');
 
 // Classes
 class Workout {
@@ -87,9 +88,15 @@ class App {
 
     // Event Listeners
     form.addEventListener('submit', this._newWorkout.bind(this));
+
     inputType.addEventListener('change', this._toggleForm);
 
     containerWorkouts.addEventListener('click', this._goToPopup.bind(this));
+
+    deleteBtn[0].addEventListener(
+      'click',
+      this._deleteSingleWorkout.bind(this)
+    );
   }
 
   _getPosition() {
@@ -220,6 +227,8 @@ class App {
     let html = `
      <li class="workout workout--${workout.type}" data-id="${workout.id}">
           <h2 class="workout__title">${workout.description}</h2>
+          <button class="delete-btn">Delete</button>
+
           <div class="workout__details">
             <span class="workout__icon">${
               workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
@@ -238,7 +247,7 @@ class App {
       html += `
           <div class="workout__details">
           <span class="workout__icon">⚡️</span>
-          <span class="workout__value">${workout.pace}</span>
+          <span class="workout__value">${workout.pace.toFixed(1)}</span>
           <span class="workout__unit">min/km</span>
         </div>
         <div class="workout__details">
@@ -268,17 +277,44 @@ class App {
     form.insertAdjacentHTML('afterend', html);
   }
 
+  // _selectWorkout() {
+  //   const workoutEl = e.target.closest('.workout');
+
+  //   if (!workoutEl) return;
+
+  //   const selectedWorkout = this.#workout.find(
+  //     work => work.id === workoutEl.dataset.id
+  //   );
+
+  // }
+
+  _deleteSingleWorkout(e) {
+    console.log(e.target);
+
+    const parent = e.target.closest('.workout');
+
+    if (!parent) return;
+
+    const selectedWorkout = this.#workout.find(
+      work => work.id === parent.dataset.id
+    );
+
+    // delete workout from array
+    this.#workout.splice(selectedWorkout, 1);
+    console.log(this.#workout);
+    // push array to local storage
+    this._saveDataToLocalStorage();
+
+    location.reload();
+  }
   _goToPopup(e) {
     const workoutEl = e.target.closest('.workout');
 
     if (!workoutEl) return;
-    console.log(workoutEl);
 
     const selectedWorkout = this.#workout.find(
       work => work.id === workoutEl.dataset.id
     );
-
-    console.log(selectedWorkout);
 
     this.#map.setView(selectedWorkout.coords, this.#mapZoomLevel, {
       animate: true,
